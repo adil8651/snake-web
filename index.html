@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        main {
+            width: 100vw;
+            height: 100vh;
+            background-color: #000;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        .snake {
+            height: 10px;
+            width: 10px;
+            background-color: #fff;
+            position: absolute;
+            z-index: 100;
+        }
+
+        .frog {
+            height: 10px;
+            width: 10px;
+            background-color: #f00;
+            position: absolute;
+            z-index: 100;
+        }
+
+        .score {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            color: #fff;
+            font-size: 20px;
+        }
+
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-size: 50px;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <div class="score"></div>
+        <div class="snake"></div>
+        <div class="frog"></div>
+        <div class="game-over">Game Over</div>
+    </main>
+    <script>
+        const snake = document.querySelector('.snake');
+        const frog = document.querySelector('.frog');
+        const score = document.querySelector('.score');
+        const gameOver = document.querySelector('.game-over');
+        let moveTimeout = null;
+        let currentDirection = null;
+        let gameOverStatus = false;
+        function init() {
+            snake.style.top = '0px';
+            snake.style.left = '0px';
+            frog.style.top = '100px';
+            frog.style.left = '100px';
+            score.innerHTML = '0';
+        }
+        init();
+        function gameOverFunction() {
+            gameOver.style.display = 'block';
+            gameOverStatus = true;
+            clearTimeout(moveTimeout);
+        }
+        function continueMove(direction) {
+            if (currentDirection !== direction) {
+                clearTimeout(moveTimeout);
+                currentDirection = direction;
+            }
+            if (snake.style.top === '-10px' || snake.style.left === '-10px' || parseInt(snake.style.top) > window.innerHeight || parseInt(snake.style.left) > window.innerWidth) {
+                gameOverFunction();
+                clearTimeout(moveTimeout);
+                return;
+            }
+            moveTimeout = setTimeout(() => {
+                move(direction);
+                continueMove(direction);
+            }, 100);
+        }
+        function move(direction) {
+            switch (direction) {
+                case 'left':
+                    snake.style.left = parseInt(snake.style.left) - 10 + 'px';
+                    break;
+                case 'right':
+                    snake.style.left = parseInt(snake.style.left) + 10 + 'px';
+                    break;
+                case 'up':
+                    snake.style.top = parseInt(snake.style.top) - 10 + 'px';
+                    break;
+                case 'down':
+                    snake.style.top = parseInt(snake.style.top) + 10 + 'px';
+                    break;
+            }
+        }
+        function randomWidthPosition() {
+            let random = Math.floor((Math.random() * window.innerWidth) / 10) * 10;
+            return random;
+        }
+        function randomHeightPosition() {
+            let random = Math.floor((Math.random() * window.innerHeight) / 10) * 10;
+            return random;
+        }
+        function eatFrog() {
+            if (snake.style.top === frog.style.top && snake.style.left === frog.style.left) {
+                frog.style.top = randomHeightPosition() + 'px';
+                frog.style.left = randomWidthPosition() + 'px';
+                score.innerHTML = parseInt(score.innerHTML) + 1;
+            }
+        }
+        setInterval(() => {
+            eatFrog();
+        }, 100);
+        document.onkeydown = function (e) {
+            if (gameOverStatus && e.keyCode !== 13) {
+                return;
+            }
+            switch (e.keyCode) {
+                case 37:
+                    continueMove('left');
+                    break;
+                case 38:
+                    continueMove('up');
+                    break;
+                case 39:
+                    continueMove('right');
+                    break;
+                case 40:
+                    continueMove('down');
+                    break;
+                case 13:
+                    window.location.reload();
+                    break;
+            }
+        }
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        document.addEventListener('touchstart', function (e) {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        }, false);
+
+        document.addEventListener('touchend', function (e) {
+            if (gameOverStatus) return;
+
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+
+            const deltaX = touchEndX - touchStartX;
+            const deltaY = touchEndY - touchStartY;
+
+            if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                if (deltaX > 30) {
+                    continueMove('right');
+                } else if (deltaX < -30) {
+                    continueMove('left');
+                }
+            } else {
+                if (deltaY > 30) {
+                    continueMove('down');
+                } else if (deltaY < -30) {
+                    continueMove('up');
+                }
+            }
+        }, false);
+        window.addEventListener('touchmove', function (e) {
+            if (!gameOverStatus && window.scrollY === 0 && e.touches[0].clientY > 0) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+    </script>
+</body>
+
+</html>
