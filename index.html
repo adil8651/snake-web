@@ -53,6 +53,14 @@
             font-size: 50px;
             display: none;
         }
+
+        .body {
+            height: 10px;
+            width: 10px;
+            background-color: #fff;
+            position: absolute;
+            z-index: 100;
+        }
     </style>
 </head>
 
@@ -64,10 +72,14 @@
         <div class="game-over">Game Over</div>
     </main>
     <script>
+        const main = document.querySelector('main');
         const snake = document.querySelector('.snake');
         const frog = document.querySelector('.frog');
         const score = document.querySelector('.score');
         const gameOver = document.querySelector('.game-over');
+        let body = document.createElement('div');
+        body.className = 'body';
+        let bodyCount = 0;
         let moveTimeout = null;
         let currentDirection = null;
         let gameOverStatus = false;
@@ -84,6 +96,33 @@
             gameOverStatus = true;
             clearTimeout(moveTimeout);
         }
+        function follow(count, direction) {
+            const current = document.getElementById(`body${count}`);
+            const previous = count === 0 ? snake : document.getElementById(`body${count - 1}`);
+
+            const prevTop = parseInt(previous.style.top);
+            const prevLeft = parseInt(previous.style.left);
+
+            current.style.top = prevTop + 'px';
+            current.style.left = prevLeft + 'px';
+        }
+        function addBody() {
+            const newBody = body.cloneNode(true);
+            newBody.id = 'body' + bodyCount;
+
+            const reference = bodyCount === 0
+                ? snake
+                : document.getElementById('body' + (bodyCount - 1));
+
+            const top = parseInt(reference.style.top);
+            const left = parseInt(reference.style.left);
+
+            newBody.style.top = top + 'px';
+            newBody.style.left = left + 'px';
+
+            main.appendChild(newBody);
+            bodyCount++;
+        }
         function continueMove(direction) {
             if (currentDirection !== direction) {
                 clearTimeout(moveTimeout);
@@ -98,6 +137,11 @@
                 move(direction);
                 continueMove(direction);
             }, 100);
+            for (let i = bodyCount; i >= 0; i--) {
+                bodyFollow = setTimeout(() => {
+                    follow(i, direction);
+                }, 100)
+            }
         }
         function move(direction) {
             switch (direction) {
@@ -128,6 +172,7 @@
                 frog.style.top = randomHeightPosition() + 'px';
                 frog.style.left = randomWidthPosition() + 'px';
                 score.innerHTML = parseInt(score.innerHTML) + 1;
+                addBody();
             }
         }
         setInterval(() => {
