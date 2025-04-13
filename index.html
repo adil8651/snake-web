@@ -101,6 +101,8 @@
             const current = document.getElementById(`body${count}`);
             const previous = count === 0 ? snake : document.getElementById(`body${count - 1}`);
 
+            if (!current || !previous) return;
+
             const prevTop = parseInt(previous.style.top);
             const prevLeft = parseInt(previous.style.left);
 
