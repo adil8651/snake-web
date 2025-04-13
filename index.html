@@ -140,6 +140,18 @@
                 move(direction);
                 continueMove(direction);
             }, 100);
+            const allBody = document.querySelectorAll('.body');
+            for (let i = 1; i < allBody.length; i++) {
+                const body = allBody[i];
+                if (
+                    parseInt(body.style.top) === parseInt(snake.style.top) &&
+                    parseInt(body.style.left) === parseInt(snake.style.left)
+                ) {
+                    gameOverFunction();
+                    clearTimeout(moveTimeout);
+                    break;
+                }
+            }
             for (let i = bodyCount; i >= 0; i--) {
                 bodyFollow = setTimeout(() => {
                     follow(i, direction);
